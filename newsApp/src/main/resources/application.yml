@@ -1,0 +1,68 @@
+# Application Configuration
+app:
+  mode: online # Toggle between online and offline modes (online/offline)
+
+# News API Configuration
+news:
+  api:
+    url: https://newsapi.org/v2/everything?q={keyword}&apiKey={apiKey}
+    key: ptrxCxhZy2z8PR6/sxgAAr9f5YODDyNQnbU1POWPBsKoxl8MRk1HDqsOf36aoNmU # Encrypted API key
+    secret-key: 1234567890123456 # Key used for encryption/decryption
+
+# Server Configuration
+
+# Spring Boot Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # Expose all actuator endpoints
+    health:
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always # Display detailed health information in /actuator/health
+
+# Cache Configuration
+spring:
+  cache:
+    type: caffeine # Use Caffeine cache
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=10m # Max cache size and expiry
+  profiles:
+    include: swagger # Enable Swagger/OpenAPI configuration
+  thymeleaf:
+    cache: false # Disable Thymeleaf cache for development
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO # Log level for the entire application
+    com.demo: DEBUG # Log level for the application's base package
+
+# Exception Handling Configuration
+server:
+  port: 8080 # Application runs on port 8080
+  error:
+    include-message: always # Include error messages in the response for debugging
+    include-binding-errors: always
+    include-stacktrace: ON_PARAM # Fixed value
+
+
+# Monitoring and Observability (Optional but Useful)
+micrometer:
+  metrics:
+    export:
+      prometheus:
+        enabled: true # Enable Prometheus metrics for monitoring

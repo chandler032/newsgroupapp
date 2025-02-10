@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: newsapp-frontend
+spec:
+  type: {{ .Values.service.frontend.type }}
+  selector:
+    app: newsapp-frontend
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.frontend.port }}
+      targetPort: 1234

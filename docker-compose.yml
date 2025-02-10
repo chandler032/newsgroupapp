@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  news-service:
+    build:
+      context: ./newsApp
+      dockerfile: Dockerfile
+    image: newsapp:latest
+    container_name: newsapp
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - secret-key=1234567890123456
+      - key=ptrxCxhZy2z8PR6/sxgAAr9f5YODDyNQnbU1POWPBsKoxl8MRk1HDqsOf36aoNmU
+      - url=https://newsapi.org/v2/everything?q={keyword}&apiKey={apiKey}
+    networks:
+      - eazybank
+    volumes:
+      - ./application.yml:/app/config/application.yml:ro
+    restart: always
+
+  newsapp-ui:
+    build:
+      context: ./newsapp-ui
+      dockerfile: Dockerfile
+    image: newsapp-ui:latest
+    container_name: newsapp-ui
+    ports:
+      - "1234:1234"
+    depends_on:
+      - news-service
+    networks:
+      - eazybank
+  
+networks:
+  eazybank:
+    driver: bridge

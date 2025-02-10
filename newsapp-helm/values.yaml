@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  backend:
+    repository: chandler032/newsapp
+    tag: latest
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: chandler032/newsapp-ui
+    tag: latest
+    pullPolicy: IfNotPresent
+
+service:
+  backend:
+    type: ClusterIP
+    port: 8080
+  frontend:
+    type: ClusterIP
+    port: 1234
+
+ingress:
+  enabled: true
+  hostname: localhost
+  backendPath: /api
+  frontendPath: /
+
+config:
+  spring_profile: default
+  secret_key: "1234567890123456"
+  api_key: "ptrxCxhZy2z8PR6/sxgAAr9f5YODDyNQnbU1POWPBsKoxl8MRk1HDqsOf36aoNmU"
+  news_api_url: "https://newsapi.org/v2/everything?q={keyword}&apiKey={apiKey}"
