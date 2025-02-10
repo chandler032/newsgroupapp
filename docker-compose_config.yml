@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  rabbit:
+    image: rabbitmq:3.13-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - eazybank
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  configserver:
+    build:
+      context: ./configserver
+      dockerfile: Dockerfile
+    image: "configserver:s6"
+    container_name: configserver
+    ports:
+      - "8071:8071"
+    healthcheck:
+      test: "curl --fail --silent http://localhost:8071/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - eazybank
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+      SPRING_PROFILES_ACTIVE: "prod"
+
+  newsgroup:
+    build:
+      context: ./newsApp  # Directory where your newsgroup Dockerfile and code are located
+      dockerfile: Dockerfile
+    image: "newsgroup:s6"
+    container_name: newsgroup
+    ports:
+      - "8080:8080"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    environment:
+      SPRING_APPLICATION_NAME: "connection"
+      CONFIGSERVER_URI: http://configserver:8071
+      SPRING_RABBITMQ_HOST: "rabbit"
+      SPRING_PROFILES_ACTIVE: "prod"
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071
+    networks:
+      - eazybank
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+
+networks:
+  eazybank:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+    driver: local

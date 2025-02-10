@@ -1,65 +1,77 @@
 pipeline {
     agent any
+
     environment {
-        IMAGE_NAME = 'newsapp'  // Docker image name
-        IMAGE_TAG = 'latest'            // Docker image tag
-        REGISTRY = 'docker.io'          // Use your Docker registry
+        BACKEND_IMAGE = 'chandler032/newsapp'
+        UI_IMAGE = 'chandler032/newsapp-ui'
+        KUBERNETES_NAMESPACE = 'default'  // Set the correct namespace if deploying to Kubernetes
     }
+
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                // Clone the repository
-                git 'https://github.com/your-repo/news-app.git'
+                git 'https://github.com/chandler032/newsgroupapp.git'
             }
         }
-        stage('Build') {
+
+        stage('Build & Test Backend') {
             steps {
-                // Build the application
-                sh './mvnw clean install'
+                sh 'mvn clean package'
             }
         }
-        stage('Test') {
+
+        stage('Build & Push Docker Images') {
             steps {
-                // Run tests
-                sh './mvnw test'
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+                        sh """
+                            echo "Building and pushing backend..."
+                            docker build -t $BACKEND_IMAGE ./backend
+                            docker push $BACKEND_IMAGE
+
+                            echo "Building and pushing UI..."
+                            docker build -t $UI_IMAGE ./ui
+                            docker push $UI_IMAGE
+                        """
+                    }
+                }
             }
         }
-        stage('Code Quality') {
+
+        stage('Deploy to Kubernetes') {
+            when {
+                expression { return fileExists('k8s-deployment.yaml') }  // Only deploy if k8s manifests exist
+            }
             steps {
-                // Run SonarQube analysis (assuming SonarQube is configured)
-                sh './mvnw sonar:sonar -Dsonar.host.url=http://your-sonarqube-url'
+                script {
+                    sh "kubectl config use-context my-k8s-context"  // Set the correct K8s context
+                    sh "kubectl apply -f k8s-deployment.yaml -n $KUBERNETES_NAMESPACE"
+                }
             }
         }
-        stage('Docker Build') {
+
+        stage('Run Locally via Docker Compose') {
             steps {
-                // Build Docker image
-                sh 'docker build -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG .'
-            }
-        }
-        stage('Docker Publish') {
-            steps {
-                // Push Docker image to registry
-                sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                sh 'docker push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Deploy the service locally using Docker
-                sh 'docker run -d -p 8080:8080 $REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
+                script {
+                    sh """
+                        echo "Starting services using Docker Compose..."
+                        docker-compose down || true  # Stop existing containers if running
+                        docker-compose up -d
+                    """
+                }
             }
         }
     }
+
     post {
-        always {
-            echo 'Cleaning up...'
-            sh 'docker rmi $REGISTRY/$IMAGE_NAME:$IMAGE_TAG'
-        }
         success {
-            echo 'Pipeline executed successfully!'
+            echo '✅ Deployment Successful!'
         }
         failure {
-            echo 'Pipeline execution failed!'
+            echo '❌ Build Failed!'
+        }
+        always {
+            echo '📢 Build Process Completed!'
         }
     }
 }
