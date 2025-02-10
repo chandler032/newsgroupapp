@@ -29,7 +29,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>News1 App</h1>
+      <h1>News App</h1>
       {/* <ToggleSwitch mode={mode} toggleMode={toggleMode} /> */}
       <HomePage />
     </div>

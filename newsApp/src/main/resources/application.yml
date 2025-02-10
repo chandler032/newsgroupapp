@@ -36,6 +36,7 @@ spring:
     include: swagger # Enable Swagger/OpenAPI configuration
   thymeleaf:
     cache: false # Disable Thymeleaf cache for development
+    check-template-location: false
 
 # Swagger/OpenAPI Configuration
 springdoc:
