@@ -29,11 +29,13 @@
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "jdk.selected.JAVA_MODULE": "18",
     "last_opened_file_path": "/Users/manjunath/Documents/news"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/jenkins" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>

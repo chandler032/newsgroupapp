@@ -1,0 +1,24 @@
+jenkins:
+  systemMessage: "Welcome to Jenkins!"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin123"
+  authorizationStrategy: "loggedInUsersCanDoAnything"
+  jobs:
+    - script: >
+        pipelineJob('NewsApp-CICD') {
+          definition {
+            cpsScm {
+              scm {
+                git {
+                  remote { url 'https://github.com/your-repo/newsSourceApp.git' }
+                  branch 'main'
+                }
+              }
+              scriptPath 'Jenkinsfile'
+            }
+          }
+        }
